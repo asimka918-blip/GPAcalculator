@@ -56,19 +56,18 @@
 
                     <div class="form-row">
                         <div class="form-field">
-                            <label for="term">Exam Term *</label>
+                            <label for="term">Terminal Exam *</label>
                             <select id="term" required>
-                                <option value="">Select Term</option>
-                                <option value="1st Term">1st Term</option>
-                                <option value="2nd Term">2nd Term</option>
-                                <option value="3rd Term">3rd Term</option>
-                                <option value="Final Term">Final Term</option>
+                                <option value="">Select Terminal Exam</option>
+                                <option value="Mid-Term">Mid-Term</option>
+                                <option value="Terminal">Terminal</option>
                             </select>
                         </div>
 
                         <div class="form-field">
-                            <label for="examDate">Exam Date *</label>
-                            <input type="date" id="examDate" required>
+                            <label for="dobBS">Date of Birth (BS) *</label>
+                            <input type="text" id="dobBS" placeholder="e.g., 2060/05/15" pattern="\d{4}/\d{2}/\d{2}" required>
+                            <span class="max-marks" style="margin-top: 5px; font-size: 0.8rem;">Format: YYYY/MM/DD (Nepali Calendar)</span>
                         </div>
                     </div>
 

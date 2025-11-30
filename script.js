@@ -52,7 +52,7 @@ let studentData = {
     class: '',
     section: '',
     term: '',
-    examDate: '',
+    dobBS: '',
     optI: '',
     optII: '',
     marks: {}
@@ -72,7 +72,7 @@ function handleStudentInfoSubmit(e) {
     studentData.class = document.getElementById('class').value;
     studentData.section = document.getElementById('section').value;
     studentData.term = document.getElementById('term').value;
-    studentData.examDate = document.getElementById('examDate').value;
+    studentData.dobBS = document.getElementById('dobBS').value.trim();
     studentData.optI = document.getElementById('optI').value;
     studentData.optII = document.getElementById('optII').value;
     
@@ -270,7 +270,15 @@ function displayMarksheet() {
                 <span class="info-value">${studentData.class}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">Exam Term:</span>
+                <span class="info-label">DOB (BS):</span>
+                <span class="info-value">${studentData.dobBS}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Section:</span>
+                <span class="info-value">${studentData.section}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Terminal Exam:</span>
                 <span class="info-value">${studentData.term}</span>
             </div>
         </div>
@@ -436,7 +444,7 @@ function startOver() {
         class: '',
         section: '',
         term: '',
-        examDate: '',
+        dobBS: '',
         optI: '',
         optII: '',
         marks: {}
@@ -527,9 +535,6 @@ function displayLibrary() {
         const card = document.createElement('div');
         card.className = 'library-card';
         
-        const dateObj = new Date(entry.examDate);
-        const formattedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-        
         card.innerHTML = `
             <div class="card-header">
                 <div class="card-title">${entry.name}</div>
@@ -550,8 +555,8 @@ function displayLibrary() {
                     <span class="info-data">${entry.section}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Exam Date:</span>
-                    <span class="info-data">${formattedDate}</span>
+                    <span class="info-label">DOB (BS):</span>
+                    <span class="info-data">${entry.dobBS}</span>
                 </div>
             </div>
             <div style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 12px;">
@@ -598,7 +603,7 @@ function viewMarksheet(id) {
         class: entry.class,
         section: entry.section,
         term: entry.term,
-        examDate: entry.examDate,
+        dobBS: entry.dobBS,
         optI: entry.optI,
         optII: entry.optII,
         marks: {}
@@ -629,9 +634,6 @@ function viewMarksheet(id) {
 function displaySavedMarksheet(entry) {
     const container = document.getElementById('marksheetContent');
     
-    const dateObj = new Date(entry.examDate);
-    const formattedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-    
     let html = `
         <div class="marksheet-header">
             <h2>MARKSHEET</h2>
@@ -653,7 +655,15 @@ function displaySavedMarksheet(entry) {
                 <span class="info-value">${entry.class}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">Exam Term:</span>
+                <span class="info-label">DOB (BS):</span>
+                <span class="info-value">${entry.dobBS}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Section:</span>
+                <span class="info-value">${entry.section}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Terminal Exam:</span>
                 <span class="info-value">${entry.term}</span>
             </div>
         </div>
