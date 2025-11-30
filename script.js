@@ -100,8 +100,9 @@ function handleStudentInfoSubmit(e) {
     // Render marks entry
     renderMarksEntry(allSubjects);
     
-    // Switch section
-    switchSection('marksEntrySection');
+    // Switch to marks entry (stay in calculator tab)
+    document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+    document.getElementById('marksEntrySection').classList.add('active');
 }
 
 function renderMarksEntry(allSubjects) {
@@ -178,7 +179,8 @@ function calculateGPA() {
     
     // Calculate and display marksheet
     displayMarksheet();
-    switchSection('marksheetSection');
+    document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+    document.getElementById('marksheetSection').classList.add('active');
 }
 
 function calculateGrade(marks, maxMarks, isPractical = false) {
@@ -421,7 +423,8 @@ function switchSection(sectionId) {
 }
 
 function goBack() {
-    switchSection('studentInfoSection');
+    document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+    document.getElementById('studentInfoSection').classList.add('active');
 }
 
 function startOver() {
@@ -432,11 +435,14 @@ function startOver() {
         rollNo: '',
         class: '',
         section: '',
+        term: '',
+        examDate: '',
         optI: '',
         optII: '',
         marks: {}
     };
-    switchSection('studentInfoSection');
+    document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+    document.getElementById('studentInfoSection').classList.add('active');
 }
 
 function printMarksheet() {
