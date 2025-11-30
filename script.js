@@ -69,42 +69,69 @@ document.getElementById('publicSearchBox').addEventListener('input', filterPubli
 function handleStudentInfoSubmit(e) {
     e.preventDefault();
     
-    studentData.name = document.getElementById('studentName').value.trim();
-    studentData.rollNo = document.getElementById('rollNo').value.trim();
-    studentData.class = document.getElementById('class').value;
-    studentData.section = document.getElementById('section').value;
-    studentData.term = document.getElementById('term').value;
-    studentData.dobBS = document.getElementById('dobBS').value.trim();
-    studentData.optI = document.getElementById('optI').value;
-    studentData.optII = document.getElementById('optII').value;
-    
-    // Build subject list with optional subjects
-    const allSubjects = [...subjects.compulsory];
-    
-    // Add Optional I
-    const optIConfig = optionalConfig.optI[studentData.optI];
-    allSubjects.push({
-        name: `${studentData.optI} (Opt I)`,
-        maxTh: optIConfig.maxTh,
-        maxPr: optIConfig.maxPr,
-        isOptional: true
-    });
-    
-    // Add Optional II
-    const optIIConfig = optionalConfig.optII[studentData.optII];
-    allSubjects.push({
-        name: `${studentData.optII} (Opt II)`,
-        maxTh: optIIConfig.maxTh,
-        maxPr: optIIConfig.maxPr,
-        isOptional: true
-    });
-    
-    // Render marks entry
-    renderMarksEntry(allSubjects);
-    
-    // Switch to marks entry (stay in calculator tab)
-    document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-    document.getElementById('marksEntrySection').classList.add('active');
+    try {
+        studentData.name = document.getElementById('studentName').value.trim();
+        studentData.rollNo = document.getElementById('rollNo').value.trim();
+        studentData.class = document.getElementById('class').value;
+        studentData.section = document.getElementById('section').value;
+        studentData.term = document.getElementById('term').value;
+        studentData.dobBS = document.getElementById('dobBS').value.trim();
+        studentData.optI = document.getElementById('optI').value;
+        studentData.optII = document.getElementById('optII').value;
+        
+        // Validate all fields
+        if (!studentData.name || !studentData.rollNo || !studentData.class || !studentData.section || 
+            !studentData.term || !studentData.dobBS || !studentData.optI || !studentData.optII) {
+            alert('Please fill all required fields!');
+            return;
+        }
+        
+        // Build subject list with optional subjects
+        const allSubjects = [...subjects.compulsory];
+        
+        // Add Optional I
+        const optIConfig = optionalConfig.optI[studentData.optI];
+        if (!optIConfig) {
+            alert('Invalid Optional I selection');
+            return;
+        }
+        
+        allSubjects.push({
+            name: `${studentData.optI} (Opt I)`,
+            maxTh: optIConfig.maxTh,
+            maxPr: optIConfig.maxPr,
+            isOptional: true
+        });
+        
+        // Add Optional II
+        const optIIConfig = optionalConfig.optII[studentData.optII];
+        if (!optIIConfig) {
+            alert('Invalid Optional II selection');
+            return;
+        }
+        
+        allSubjects.push({
+            name: `${studentData.optII} (Opt II)`,
+            maxTh: optIIConfig.maxTh,
+            maxPr: optIIConfig.maxPr,
+            isOptional: true
+        });
+        
+        // Render marks entry
+        renderMarksEntry(allSubjects);
+        
+        // Switch to marks entry (stay in calculator tab)
+        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+        const marksSection = document.getElementById('marksEntrySection');
+        if (marksSection) {
+            marksSection.classList.add('active');
+        } else {
+            alert('Error: Marks entry section not found!');
+        }
+    } catch (error) {
+        console.error('Error in handleStudentInfoSubmit:', error);
+        alert('Error: ' + error.message);
+    }
 }
 
 function renderMarksEntry(allSubjects) {
