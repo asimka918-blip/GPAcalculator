@@ -23,7 +23,7 @@ const GRADE_POINTS = {
 };
 
 const GRADE_BOUNDARIES = {
-    theory: [
+    percentage: [
         { grade: 'A+', min: 90 },
         { grade: 'A', min: 80 },
         { grade: 'B+', min: 70 },
@@ -33,7 +33,7 @@ const GRADE_BOUNDARIES = {
         { grade: 'D', min: 35 },
         { grade: 'NG', min: 0 }
     ],
-    practical: [
+    practicalPercentage: [
         { grade: 'A+', min: 90 },
         { grade: 'A', min: 80 },
         { grade: 'B+', min: 70 },
@@ -173,8 +173,8 @@ function calculateGPA() {
         const practical = parseFloat(document.getElementById(`practical_${i}`).value) || 0;
         const subject = subjects[i];
 
-        const theoryGrade = getGrade(theory, 'theory');
-        const practicalGrade = getGrade(practical, 'practical');
+        const theoryGrade = getGrade(theory, 'theory', subject.theory);
+        const practicalGrade = getGrade(practical, 'practical', subject.practical);
         const finalGrade = theoryGrade === 'NG' || practicalGrade === 'NG' ? 'NG' : 
                           (GRADE_POINTS[theoryGrade] < GRADE_POINTS[practicalGrade] ? theoryGrade : practicalGrade);
 
@@ -208,10 +208,11 @@ function calculateGPA() {
     displayMarksheet();
 }
 
-function getGrade(marks, type) {
-    const boundaries = GRADE_BOUNDARIES[type];
+function getGrade(marks, type, maxMarks) {
+    const percentage = (marks / maxMarks) * 100;
+    const boundaries = type === 'practical' ? GRADE_BOUNDARIES.practicalPercentage : GRADE_BOUNDARIES.percentage;
     for (let b of boundaries) {
-        if (marks >= b.min) return b.grade;
+        if (percentage >= b.min) return b.grade;
     }
     return 'NG';
 }
