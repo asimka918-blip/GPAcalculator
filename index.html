@@ -10,32 +10,31 @@
     <div class="container">
         <!-- Navigation Tabs -->
         <div class="nav-tabs">
-            <button class="nav-tab active" onclick="switchTab('calculator')">📊 Calculator</button>
-            <button class="nav-tab" onclick="switchTab('library')">📚 My GPA Library</button>
-            <button class="nav-tab" onclick="switchTab('publicLibrary')">🌍 Public GPA Board</button>
+            <button class="nav-tab active" onclick="goToTab('tab-calculator')">📊 Calculator</button>
+            <button class="nav-tab" onclick="goToTab('tab-library')">📚 My GPA Library</button>
+            <button class="nav-tab" onclick="goToTab('tab-public')">🌍 Public GPA Board</button>
         </div>
 
-        <!-- Calculator Tab -->
-        <div id="calculatorTab" class="tab-content active">
-            <!-- Student Info Section -->
-            <div id="studentInfoSection" class="section active">
+        <!-- CALCULATOR TAB -->
+        <div id="tab-calculator" class="tab-content active">
+            <div id="step-info" class="step">
                 <h1>📚 GPA Calculator & Marksheet</h1>
                 <p class="subtitle">Enter your information to generate marksheet</p>
                 
-                <form id="studentInfoForm" class="form-group">
+                <form id="infoForm" onsubmit="handleInfoForm(event)">
                     <div class="form-field">
-                        <label for="studentName">Student Name *</label>
-                        <input type="text" id="studentName" placeholder="Enter full name" required>
+                        <label>Student Name *</label>
+                        <input type="text" id="name" placeholder="Enter full name" required>
                     </div>
 
                     <div class="form-field">
-                        <label for="rollNo">Roll No *</label>
+                        <label>Roll No *</label>
                         <input type="text" id="rollNo" placeholder="Enter roll number" required>
                     </div>
 
                     <div class="form-row">
                         <div class="form-field">
-                            <label for="class">Class *</label>
+                            <label>Class *</label>
                             <select id="class" required>
                                 <option value="">Select Class</option>
                                 <option value="9">Class 9</option>
@@ -44,7 +43,7 @@
                         </div>
 
                         <div class="form-field">
-                            <label for="section">Section *</label>
+                            <label>Section *</label>
                             <select id="section" required>
                                 <option value="">Select Section</option>
                                 <option value="A">A</option>
@@ -57,7 +56,7 @@
 
                     <div class="form-row">
                         <div class="form-field">
-                            <label for="term">Exam Term *</label>
+                            <label>Exam Term *</label>
                             <select id="term" required>
                                 <option value="">Select Term</option>
                                 <option value="1st Term">1st Term</option>
@@ -68,15 +67,15 @@
                         </div>
 
                         <div class="form-field">
-                            <label for="dobBS">Date of Birth (BS) *</label>
+                            <label>Date of Birth (BS) *</label>
                             <input type="text" id="dobBS" placeholder="e.g., 2060/05/15" pattern="\d{4}/\d{2}/\d{2}" required>
-                            <span class="max-marks" style="margin-top: 5px; font-size: 0.8rem;">Format: YYYY/MM/DD (Nepali Calendar)</span>
+                            <span class="max-marks">Format: YYYY/MM/DD</span>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-field">
-                            <label for="optI">Optional I *</label>
+                            <label>Optional I *</label>
                             <select id="optI" required>
                                 <option value="">Select Optional I</option>
                                 <option value="Math">Math</option>
@@ -85,7 +84,7 @@
                         </div>
 
                         <div class="form-field">
-                            <label for="optII">Optional II *</label>
+                            <label>Optional II *</label>
                             <select id="optII" required>
                                 <option value="">Select Optional II</option>
                                 <option value="Computer Science">Computer Science</option>
@@ -98,74 +97,70 @@
                 </form>
             </div>
 
-        <!-- Marks Entry Section -->
-        <div id="marksEntrySection" class="section">
-            <h2>Enter Marks</h2>
-            <p class="subtitle">Enter theory and practical marks for each subject</p>
+            <div id="step-marks" class="step" style="display: none;">
+                <h2>Enter Marks</h2>
+                <p class="subtitle">Enter theory and practical marks for each subject</p>
 
-            <div id="marksContainer" class="marks-container">
-                <!-- Dynamically populated -->
+                <div id="marksForm">
+                    <!-- Dynamically populated -->
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="goBackToInfo()">← Back</button>
+                    <button class="btn-primary" onclick="calculateGPA()">Generate Marksheet</button>
+                </div>
             </div>
 
-            <div class="button-group">
-                <button type="button" class="btn-secondary" onclick="goBack()">Back</button>
-                <button type="button" class="btn-primary" onclick="calculateGPA()">Generate Marksheet</button>
+            <div id="step-marksheet" class="step" style="display: none;">
+                <div id="marksheetDisplay">
+                    <!-- Dynamically populated -->
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-success" onclick="saveMarksheet()">💾 Save to Library</button>
+                    <button class="btn-secondary" onclick="printMarksheet()">🖨️ Print</button>
+                    <button class="btn-secondary" onclick="startNewCalc()">Start Over</button>
+                </div>
             </div>
         </div>
 
-        <!-- Marksheet Display Section -->
-        <div id="marksheetSection" class="section">
-            <div id="marksheetContent">
-                <!-- Dynamically populated -->
-            </div>
-
-            <div class="button-group">
-                <button type="button" class="btn-success" onclick="saveToLibrary()">💾 Save to Library</button>
-                <button type="button" class="btn-secondary" onclick="printMarksheet()">🖨️ Print</button>
-                <button type="button" class="btn-secondary" onclick="startOver()">Start Over</button>
-            </div>
-        </div>
-        </div>
-
-        <!-- Library Tab -->
-        <div id="libraryTab" class="tab-content">
+        <!-- LIBRARY TAB -->
+        <div id="tab-library" class="tab-content">
             <h1>📚 My GPA Library</h1>
             <p class="subtitle">View all your saved student GPAs</p>
             
             <div class="library-controls">
-                <input type="text" id="librarySearchBox" placeholder="Search by name or roll no..." class="search-input">
-                <button type="button" class="btn-secondary" onclick="clearAllLibrary()">🗑️ Clear All</button>
+                <input type="text" id="searchLibrary" placeholder="Search by name or roll no..." class="search-input" onkeyup="filterLibrary()">
+                <button class="btn-secondary" onclick="clearLibrary()">🗑️ Clear All</button>
             </div>
 
-            <div id="libraryContainer" class="library-container">
+            <div id="libraryList" class="library-container">
                 <!-- Dynamically populated -->
             </div>
         </div>
 
-        <!-- Public GPA Board Tab -->
-        <div id="publicLibraryTab" class="tab-content">
+        <!-- PUBLIC GPA BOARD TAB -->
+        <div id="tab-public" class="tab-content">
             <h1>🌍 Public GPA Board</h1>
-            <p class="subtitle">View GPAs of all students who used this website</p>
+            <p class="subtitle">View GPAs of all students</p>
             
             <div class="library-controls">
-                <input type="text" id="publicSearchBox" placeholder="Search by name, class, or section..." class="search-input">
-                <div style="display: flex; gap: 10px;">
-                    <select id="publicFilterClass" class="search-input" style="flex: 0 1 auto; max-width: 150px;" onchange="filterPublicLibrary()">
-                        <option value="">All Classes</option>
-                        <option value="9">Class 9</option>
-                        <option value="10">Class 10</option>
-                    </select>
-                    <select id="publicFilterTerm" class="search-input" style="flex: 0 1 auto; max-width: 150px;" onchange="filterPublicLibrary()">
-                        <option value="">All Terms</option>
-                        <option value="1st Term">1st Term</option>
-                        <option value="2nd Term">2nd Term</option>
-                        <option value="3rd Term">3rd Term</option>
-                        <option value="Final Term">Final Term</option>
-                    </select>
-                </div>
+                <input type="text" id="searchPublic" placeholder="Search by name..." class="search-input" onkeyup="filterPublic()">
+                <select id="filterClass" class="search-input" style="max-width: 150px;" onchange="filterPublic()">
+                    <option value="">All Classes</option>
+                    <option value="9">Class 9</option>
+                    <option value="10">Class 10</option>
+                </select>
+                <select id="filterTerm" class="search-input" style="max-width: 150px;" onchange="filterPublic()">
+                    <option value="">All Terms</option>
+                    <option value="1st Term">1st Term</option>
+                    <option value="2nd Term">2nd Term</option>
+                    <option value="3rd Term">3rd Term</option>
+                    <option value="Final Term">Final Term</option>
+                </select>
             </div>
 
-            <div id="publicLibraryContainer" class="library-container">
+            <div id="publicList" class="library-container">
                 <!-- Dynamically populated -->
             </div>
         </div>
