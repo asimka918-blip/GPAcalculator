@@ -10,6 +10,9 @@ const gradePoints = {
     'NG': 0.0
 };
 
+// Local Storage Key
+const LIBRARY_STORAGE_KEY = 'gpa_calculator_library';
+
 // Credit Hours for Compulsory Subjects
 const compulsoryCreditHours = {
     'C. English': { th: 3.75, pr: 1.25 },
@@ -48,13 +51,18 @@ let studentData = {
     rollNo: '',
     class: '',
     section: '',
+    term: '',
+    examDate: '',
     optI: '',
     optII: '',
     marks: {}
 };
 
+let currentMarksheet = null;
+
 // Initialize
 document.getElementById('studentInfoForm').addEventListener('submit', handleStudentInfoSubmit);
+document.getElementById('librarySearchBox').addEventListener('input', filterLibrary);
 
 function handleStudentInfoSubmit(e) {
     e.preventDefault();
@@ -63,6 +71,8 @@ function handleStudentInfoSubmit(e) {
     studentData.rollNo = document.getElementById('rollNo').value.trim();
     studentData.class = document.getElementById('class').value;
     studentData.section = document.getElementById('section').value;
+    studentData.term = document.getElementById('term').value;
+    studentData.examDate = document.getElementById('examDate').value;
     studentData.optI = document.getElementById('optI').value;
     studentData.optII = document.getElementById('optII').value;
     
@@ -258,8 +268,8 @@ function displayMarksheet() {
                 <span class="info-value">${studentData.class}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">Section:</span>
-                <span class="info-value">${studentData.section}</span>
+                <span class="info-label">Exam Term:</span>
+                <span class="info-value">${studentData.term}</span>
             </div>
         </div>
         
@@ -291,6 +301,7 @@ function displayMarksheet() {
     
     let totalWGP = 0;
     let totalCreditHours = 0;
+    const subjectsData = [];
     
     // Process all subjects in order
     const allSubjectNames = Object.keys(studentData.marks);
@@ -333,6 +344,21 @@ function displayMarksheet() {
         const gp = gradePoints[finalGrade] || 0;
         const wgp = gp * totalCH;
         
+        // Store subject data for library
+        subjectsData.push({
+            name: subjectName,
+            theory: theoryMarks,
+            practical: practicalMarks,
+            maxTh: maxTh,
+            maxPr: maxPr,
+            theoryGrade: theoryGrade,
+            practicalGrade: practicalGrade,
+            grade: finalGrade,
+            creditHours: totalCH,
+            gp: gp,
+            wgp: wgp
+        });
+        
         totalWGP += wgp;
         totalCreditHours += totalCH;
         
@@ -356,18 +382,16 @@ function displayMarksheet() {
     // Calculate final GPA
     const finalGPA = totalCreditHours > 0 ? (totalWGP / totalCreditHours).toFixed(2) : 0;
     
+    // Store current marksheet data
+    currentMarksheet = {
+        gpa: finalGPA,
+        totalWGP: totalWGP,
+        totalCreditHours: totalCreditHours,
+        subjectsData: subjectsData
+    };
+    
     // Determine GPA status
-    let gpaStatus = '';
-    if (finalGPA >= 3.6) {
-        gpaStatus = '🌟 Excellent';
-    } else if (finalGPA >= 3.0) {
-        gpaStatus = '👍 Very Good';
-    } else if (finalGPA >= 2.5) {
-        gpaStatus = '✅ Good';
-    } else if (finalGPA >= 2.0) {
-        gpaStatus = '📚 Average';
-    } else if (finalGPA > 0) {
-        gpaStatus = '⚠️ Below Average';
+    let gpaStatus = getGPAStatus(finalGPA);
     } else {
         gpaStatus = '❌ Failed';
     }
@@ -417,4 +441,311 @@ function startOver() {
 
 function printMarksheet() {
     window.print();
+}
+
+// Tab Switching
+function switchTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected tab
+    document.getElementById(tabName + 'Tab').classList.add('active');
+    event.target.classList.add('active');
+    
+    // Load library if switching to library
+    if (tabName === 'library') {
+        displayLibrary();
+    }
+}
+
+// Save to Library
+function saveToLibrary() {
+    if (!currentMarksheet) {
+        alert('No marksheet to save!');
+        return;
+    }
+    
+    // Get existing library
+    let library = JSON.parse(localStorage.getItem(LIBRARY_STORAGE_KEY)) || [];
+    
+    // Create library entry
+    const entry = {
+        id: Date.now(),
+        ...studentData,
+        gpa: currentMarksheet.gpa,
+        totalWGP: currentMarksheet.totalWGP,
+        totalCreditHours: currentMarksheet.totalCreditHours,
+        subjectsData: currentMarksheet.subjectsData,
+        savedDate: new Date().toLocaleString()
+    };
+    
+    // Add to library
+    library.push(entry);
+    localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(library));
+    
+    alert('✅ Marksheet saved to library successfully!');
+    
+    // Switch to library tab
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('libraryTab').classList.add('active');
+    document.querySelectorAll('.nav-tab')[1].classList.add('active');
+    
+    displayLibrary();
+}
+
+// Display Library
+function displayLibrary() {
+    const container = document.getElementById('libraryContainer');
+    const library = JSON.parse(localStorage.getItem(LIBRARY_STORAGE_KEY)) || [];
+    
+    if (library.length === 0) {
+        container.innerHTML = `
+            <div class="empty-library" style="grid-column: 1 / -1;">
+                <div class="empty-library-icon">📚</div>
+                <p>No saved marksheets yet!</p>
+                <p style="font-size: 0.95rem;">Go to Calculator tab and save your first marksheet</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = '';
+    library.forEach(entry => {
+        const gpaStatus = getGPAStatus(entry.gpa);
+        const card = document.createElement('div');
+        card.className = 'library-card';
+        
+        const dateObj = new Date(entry.examDate);
+        const formattedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        
+        card.innerHTML = `
+            <div class="card-header">
+                <div class="card-title">${entry.name}</div>
+                <div class="card-gpa">${entry.gpa}</div>
+            </div>
+            <div class="card-term">${entry.term}</div>
+            <div class="card-info">
+                <div class="info-row">
+                    <span class="info-label">Roll No:</span>
+                    <span class="info-data">${entry.rollNo}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Class:</span>
+                    <span class="info-data">${entry.class}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Section:</span>
+                    <span class="info-data">${entry.section}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Exam Date:</span>
+                    <span class="info-data">${formattedDate}</span>
+                </div>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 12px;">
+                <strong>Optional I:</strong> ${entry.optI} | <strong>Optional II:</strong> ${entry.optII}
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 12px;">
+                Status: <span style="color: var(--primary-color); font-weight: 600;">${gpaStatus}</span>
+            </div>
+            <div class="card-actions">
+                <button type="button" class="card-btn" onclick="viewMarksheet(${entry.id})">👁️ View</button>
+                <button type="button" class="card-btn card-btn-delete" onclick="deleteFromLibrary(${entry.id})">🗑️ Delete</button>
+            </div>
+        `;
+        
+        container.appendChild(card);
+    });
+}
+
+// Filter Library
+function filterLibrary() {
+    const searchTerm = document.getElementById('librarySearchBox').value.toLowerCase();
+    const cards = document.querySelectorAll('.library-card');
+    
+    cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(searchTerm) ? 'block' : 'none';
+    });
+}
+
+// View Marksheet from Library
+function viewMarksheet(id) {
+    const library = JSON.parse(localStorage.getItem(LIBRARY_STORAGE_KEY)) || [];
+    const entry = library.find(e => e.id === id);
+    
+    if (!entry) {
+        alert('Marksheet not found!');
+        return;
+    }
+    
+    // Restore student data and display
+    studentData = {
+        name: entry.name,
+        rollNo: entry.rollNo,
+        class: entry.class,
+        section: entry.section,
+        term: entry.term,
+        examDate: entry.examDate,
+        optI: entry.optI,
+        optII: entry.optII,
+        marks: {}
+    };
+    
+    currentMarksheet = {
+        gpa: entry.gpa,
+        totalWGP: entry.totalWGP,
+        totalCreditHours: entry.totalCreditHours,
+        subjectsData: entry.subjectsData
+    };
+    
+    // Display marksheet
+    displaySavedMarksheet(entry);
+    
+    // Switch to calculator tab
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('calculatorTab').classList.add('active');
+    document.querySelectorAll('.nav-tab')[0].classList.add('active');
+    
+    // Hide sections, show marksheet
+    document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+    document.getElementById('marksheetSection').classList.add('active');
+}
+
+// Display Saved Marksheet
+function displaySavedMarksheet(entry) {
+    const container = document.getElementById('marksheetContent');
+    
+    const dateObj = new Date(entry.examDate);
+    const formattedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    
+    let html = `
+        <div class="marksheet-header">
+            <h2>MARKSHEET</h2>
+            <p>The grade secured by <b>${entry.name}</b> with Roll No <b>${entry.rollNo}</b></p>
+            <p>from Class <b>${entry.class}</b> of Section <b>${entry.section}</b> is below:</p>
+        </div>
+        
+        <div class="student-info">
+            <div class="info-item">
+                <span class="info-label">Student Name:</span>
+                <span class="info-value">${entry.name}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Roll No:</span>
+                <span class="info-value">${entry.rollNo}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Class:</span>
+                <span class="info-value">${entry.class}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Exam Term:</span>
+                <span class="info-value">${entry.term}</span>
+            </div>
+        </div>
+        
+        <div class="optional-info">
+            <div class="opt-item">
+                <span class="opt-label">Optional I:</span>
+                <span class="opt-value">${entry.optI}</span>
+            </div>
+            <div class="opt-item">
+                <span class="opt-label">Optional II:</span>
+                <span class="opt-value">${entry.optII}</span>
+            </div>
+        </div>
+        
+        <table class="marksheet-table">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Theory</th>
+                    <th>Practical</th>
+                    <th>Grade</th>
+                    <th>Credit Hours</th>
+                    <th>GP</th>
+                    <th>WGP</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    entry.subjectsData.forEach(subject => {
+        const gradeClass = getGradeClass(subject.grade);
+        const theoryGradeClass = getGradeClass(subject.theoryGrade);
+        const practicalGradeClass = getGradeClass(subject.practicalGrade);
+        
+        html += `
+            <tr>
+                <td class="subject-name">${subject.name}</td>
+                <td><span class="grade-badge ${theoryGradeClass}">${subject.theory}/${subject.maxTh}</span></td>
+                <td><span class="grade-badge ${practicalGradeClass}">${subject.practical}/${subject.maxPr}</span></td>
+                <td><span class="grade-badge ${gradeClass}">${subject.grade}</span></td>
+                <td>${subject.creditHours}</td>
+                <td>${subject.gp.toFixed(2)}</td>
+                <td>${subject.wgp.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+    
+    const gpaStatus = getGPAStatus(entry.gpa);
+    
+    html += `
+            </tbody>
+        </table>
+        
+        <div class="gpa-summary">
+            <div class="gpa-label">OVERALL GPA</div>
+            <div class="gpa-value">
+                <span>${entry.gpa}</span>
+                <span class="gpa-status" style="font-size: 1.2rem;">${gpaStatus}</span>
+            </div>
+            <div class="gpa-status">Total Weighted Grade Points: ${entry.totalWGP.toFixed(2)} | Total Credit Hours: ${entry.totalCreditHours}</div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+// Delete from Library
+function deleteFromLibrary(id) {
+    if (confirm('Are you sure you want to delete this marksheet?')) {
+        let library = JSON.parse(localStorage.getItem(LIBRARY_STORAGE_KEY)) || [];
+        library = library.filter(e => e.id !== id);
+        localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(library));
+        displayLibrary();
+    }
+}
+
+// Clear All Library
+function clearAllLibrary() {
+    if (confirm('Are you sure you want to delete ALL marksheets? This cannot be undone!')) {
+        localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify([]));
+        displayLibrary();
+    }
+}
+
+// Helper function to get GPA status
+function getGPAStatus(gpa) {
+    if (gpa >= 3.6) {
+        return '🌟 Excellent';
+    } else if (gpa >= 3.0) {
+        return '👍 Very Good';
+    } else if (gpa >= 2.5) {
+        return '✅ Good';
+    } else if (gpa >= 2.0) {
+        return '📚 Average';
+    } else if (gpa > 0) {
+        return '⚠️ Below Average';
+    } else {
+        return '❌ Failed';
+    }
 }

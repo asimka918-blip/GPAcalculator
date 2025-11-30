@@ -8,67 +8,93 @@
 </head>
 <body>
     <div class="container">
-        <!-- Student Info Section -->
-        <div id="studentInfoSection" class="section active">
-            <h1>📚 GPA Calculator & Marksheet</h1>
-            <p class="subtitle">Enter your information to generate marksheet</p>
-            
-            <form id="studentInfoForm" class="form-group">
-                <div class="form-field">
-                    <label for="studentName">Student Name *</label>
-                    <input type="text" id="studentName" placeholder="Enter full name" required>
-                </div>
-
-                <div class="form-field">
-                    <label for="rollNo">Roll No *</label>
-                    <input type="text" id="rollNo" placeholder="Enter roll number" required>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-field">
-                        <label for="class">Class *</label>
-                        <select id="class" required>
-                            <option value="">Select Class</option>
-                            <option value="9">Class 9</option>
-                            <option value="10">Class 10</option>
-                        </select>
-                    </div>
-
-                    <div class="form-field">
-                        <label for="section">Section *</label>
-                        <select id="section" required>
-                            <option value="">Select Section</option>
-                            <option value="A">A</option>
-                            <option value="B">B</option>
-                            <option value="C">C</option>
-                            <option value="D">D</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-field">
-                        <label for="optI">Optional I *</label>
-                        <select id="optI" required>
-                            <option value="">Select Optional I</option>
-                            <option value="Math">Math</option>
-                            <option value="Economics">Economics</option>
-                        </select>
-                    </div>
-
-                    <div class="form-field">
-                        <label for="optII">Optional II *</label>
-                        <select id="optII" required>
-                            <option value="">Select Optional II</option>
-                            <option value="Computer Science">Computer Science</option>
-                            <option value="Accountancy">Accountancy</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-primary">Continue to Marks Entry</button>
-            </form>
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('calculator')">📊 Calculator</button>
+            <button class="nav-tab" onclick="switchTab('library')">📚 GPA Library</button>
         </div>
+
+        <!-- Calculator Tab -->
+        <div id="calculatorTab" class="tab-content active">
+            <!-- Student Info Section -->
+            <div id="studentInfoSection" class="section active">
+                <h1>📚 GPA Calculator & Marksheet</h1>
+                <p class="subtitle">Enter your information to generate marksheet</p>
+                
+                <form id="studentInfoForm" class="form-group">
+                    <div class="form-field">
+                        <label for="studentName">Student Name *</label>
+                        <input type="text" id="studentName" placeholder="Enter full name" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="rollNo">Roll No *</label>
+                        <input type="text" id="rollNo" placeholder="Enter roll number" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="class">Class *</label>
+                            <select id="class" required>
+                                <option value="">Select Class</option>
+                                <option value="9">Class 9</option>
+                                <option value="10">Class 10</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="section">Section *</label>
+                            <select id="section" required>
+                                <option value="">Select Section</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="term">Exam Term *</label>
+                            <select id="term" required>
+                                <option value="">Select Term</option>
+                                <option value="1st Term">1st Term</option>
+                                <option value="2nd Term">2nd Term</option>
+                                <option value="3rd Term">3rd Term</option>
+                                <option value="Final Term">Final Term</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="examDate">Exam Date *</label>
+                            <input type="date" id="examDate" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="optI">Optional I *</label>
+                            <select id="optI" required>
+                                <option value="">Select Optional I</option>
+                                <option value="Math">Math</option>
+                                <option value="Economics">Economics</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="optII">Optional II *</label>
+                            <select id="optII" required>
+                                <option value="">Select Optional II</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Accountancy">Accountancy</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Continue to Marks Entry</button>
+                </form>
+            </div>
 
         <!-- Marks Entry Section -->
         <div id="marksEntrySection" class="section">
@@ -92,8 +118,25 @@
             </div>
 
             <div class="button-group">
+                <button type="button" class="btn-success" onclick="saveToLibrary()">💾 Save to Library</button>
                 <button type="button" class="btn-secondary" onclick="printMarksheet()">🖨️ Print</button>
                 <button type="button" class="btn-secondary" onclick="startOver()">Start Over</button>
+            </div>
+        </div>
+        </div>
+
+        <!-- Library Tab -->
+        <div id="libraryTab" class="tab-content">
+            <h1>📚 GPA Library</h1>
+            <p class="subtitle">View all saved student GPAs</p>
+            
+            <div class="library-controls">
+                <input type="text" id="librarySearchBox" placeholder="Search by name or roll no..." class="search-input">
+                <button type="button" class="btn-secondary" onclick="clearAllLibrary()">🗑️ Clear All</button>
+            </div>
+
+            <div id="libraryContainer" class="library-container">
+                <!-- Dynamically populated -->
             </div>
         </div>
     </div>
