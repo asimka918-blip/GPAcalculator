@@ -12,6 +12,7 @@ const gradePoints = {
 
 // Local Storage Key
 const LIBRARY_STORAGE_KEY = 'gpa_calculator_library';
+const PUBLIC_LIBRARY_KEY = 'gpa_calculator_public_library';
 
 // Credit Hours for Compulsory Subjects
 const compulsoryCreditHours = {
@@ -63,6 +64,7 @@ let currentMarksheet = null;
 // Initialize
 document.getElementById('studentInfoForm').addEventListener('submit', handleStudentInfoSubmit);
 document.getElementById('librarySearchBox').addEventListener('input', filterLibrary);
+document.getElementById('publicSearchBox').addEventListener('input', filterPublicLibrary);
 
 function handleStudentInfoSubmit(e) {
     e.preventDefault();
@@ -474,6 +476,8 @@ function switchTab(tabName) {
     // Load library if switching to library
     if (tabName === 'library') {
         displayLibrary();
+    } else if (tabName === 'publicLibrary') {
+        displayPublicLibrary();
     }
 }
 
@@ -498,9 +502,26 @@ function saveToLibrary() {
         savedDate: new Date().toLocaleString()
     };
     
-    // Add to library
+    // Add to personal library
     library.push(entry);
     localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(library));
+    
+    // Also add to public library (without rollNo for privacy)
+    let publicLibrary = JSON.parse(localStorage.getItem(PUBLIC_LIBRARY_KEY)) || [];
+    const publicEntry = {
+        id: Date.now(),
+        name: studentData.name,
+        class: studentData.class,
+        section: studentData.section,
+        term: studentData.term,
+        dobBS: studentData.dobBS,
+        optI: studentData.optI,
+        optII: studentData.optII,
+        gpa: currentMarksheet.gpa,
+        savedDate: new Date().toLocaleString()
+    };
+    publicLibrary.push(publicEntry);
+    localStorage.setItem(PUBLIC_LIBRARY_KEY, JSON.stringify(publicLibrary));
     
     alert('✅ Marksheet saved to library successfully!');
     
@@ -764,4 +785,102 @@ function getGPAStatus(gpa) {
     } else {
         return '❌ Failed';
     }
+}
+
+// Display Public Library
+function displayPublicLibrary() {
+    const container = document.getElementById('publicLibraryContainer');
+    let publicLibrary = JSON.parse(localStorage.getItem(PUBLIC_LIBRARY_KEY)) || [];
+    
+    if (publicLibrary.length === 0) {
+        container.innerHTML = `
+            <div class="empty-library" style="grid-column: 1 / -1;">
+                <div class="empty-library-icon">🌍</div>
+                <p>No saved marksheets in public board yet!</p>
+                <p style="font-size: 0.95rem;">Be the first to contribute your marksheet</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Sort by GPA descending
+    publicLibrary.sort((a, b) => parseFloat(b.gpa) - parseFloat(a.gpa));
+    
+    container.innerHTML = '';
+    let rank = 1;
+    
+    publicLibrary.forEach((entry, index) => {
+        const gpaStatus = getGPAStatus(entry.gpa);
+        const card = document.createElement('div');
+        card.className = 'library-card';
+        
+        // Add rank badge for top 3
+        let rankBadge = '';
+        if (index === 0) {
+            rankBadge = '🥇';
+        } else if (index === 1) {
+            rankBadge = '🥈';
+        } else if (index === 2) {
+            rankBadge = '🥉';
+        }
+        
+        card.innerHTML = `
+            <div class="card-header">
+                <div class="card-title">${rankBadge ? rankBadge + ' ' : ''}${entry.name}</div>
+                <div class="card-gpa">${entry.gpa}</div>
+            </div>
+            <div class="card-term">${entry.term}</div>
+            <div class="card-info">
+                <div class="info-row">
+                    <span class="info-label">Class:</span>
+                    <span class="info-data">${entry.class}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Section:</span>
+                    <span class="info-data">${entry.section}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">DOB (BS):</span>
+                    <span class="info-data">${entry.dobBS}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Rank:</span>
+                    <span class="info-data">#${index + 1}</span>
+                </div>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 12px;">
+                <strong>Optional I:</strong> ${entry.optI} | <strong>Optional II:</strong> ${entry.optII}
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 12px;">
+                Status: <span style="color: var(--primary-color); font-weight: 600;">${gpaStatus}</span>
+            </div>
+        `;
+        
+        container.appendChild(card);
+    });
+}
+
+// Filter Public Library
+function filterPublicLibrary() {
+    const searchTerm = document.getElementById('publicSearchBox').value.toLowerCase();
+    const classFilter = document.getElementById('publicFilterClass').value;
+    const termFilter = document.getElementById('publicFilterTerm').value;
+    const cards = document.querySelectorAll('#publicLibraryContainer .library-card');
+    
+    cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        let show = text.includes(searchTerm);
+        
+        if (classFilter && !text.includes(`class:${classFilter}`)) {
+            if (!text.includes('class:\n' + classFilter) && !text.includes('Class:\n' + classFilter)) {
+                show = false;
+            }
+        }
+        
+        if (termFilter && !text.includes(termFilter)) {
+            show = false;
+        }
+        
+        card.style.display = show ? 'block' : 'none';
+    });
 }

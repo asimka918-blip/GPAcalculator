@@ -11,7 +11,8 @@
         <!-- Navigation Tabs -->
         <div class="nav-tabs">
             <button class="nav-tab active" onclick="switchTab('calculator')">📊 Calculator</button>
-            <button class="nav-tab" onclick="switchTab('library')">📚 GPA Library</button>
+            <button class="nav-tab" onclick="switchTab('library')">📚 My GPA Library</button>
+            <button class="nav-tab" onclick="switchTab('publicLibrary')">🌍 Public GPA Board</button>
         </div>
 
         <!-- Calculator Tab -->
@@ -56,11 +57,13 @@
 
                     <div class="form-row">
                         <div class="form-field">
-                            <label for="term">Terminal Exam *</label>
+                            <label for="term">Exam Term *</label>
                             <select id="term" required>
-                                <option value="">Select Terminal Exam</option>
-                                <option value="Mid-Term">Mid-Term</option>
-                                <option value="Terminal">Terminal</option>
+                                <option value="">Select Term</option>
+                                <option value="1st Term">1st Term</option>
+                                <option value="2nd Term">2nd Term</option>
+                                <option value="3rd Term">3rd Term</option>
+                                <option value="Final Term">Final Term</option>
                             </select>
                         </div>
 
@@ -126,8 +129,8 @@
 
         <!-- Library Tab -->
         <div id="libraryTab" class="tab-content">
-            <h1>📚 GPA Library</h1>
-            <p class="subtitle">View all saved student GPAs</p>
+            <h1>📚 My GPA Library</h1>
+            <p class="subtitle">View all your saved student GPAs</p>
             
             <div class="library-controls">
                 <input type="text" id="librarySearchBox" placeholder="Search by name or roll no..." class="search-input">
@@ -135,6 +138,34 @@
             </div>
 
             <div id="libraryContainer" class="library-container">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Public GPA Board Tab -->
+        <div id="publicLibraryTab" class="tab-content">
+            <h1>🌍 Public GPA Board</h1>
+            <p class="subtitle">View GPAs of all students who used this website</p>
+            
+            <div class="library-controls">
+                <input type="text" id="publicSearchBox" placeholder="Search by name, class, or section..." class="search-input">
+                <div style="display: flex; gap: 10px;">
+                    <select id="publicFilterClass" class="search-input" style="flex: 0 1 auto; max-width: 150px;" onchange="filterPublicLibrary()">
+                        <option value="">All Classes</option>
+                        <option value="9">Class 9</option>
+                        <option value="10">Class 10</option>
+                    </select>
+                    <select id="publicFilterTerm" class="search-input" style="flex: 0 1 auto; max-width: 150px;" onchange="filterPublicLibrary()">
+                        <option value="">All Terms</option>
+                        <option value="1st Term">1st Term</option>
+                        <option value="2nd Term">2nd Term</option>
+                        <option value="3rd Term">3rd Term</option>
+                        <option value="Final Term">Final Term</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="publicLibraryContainer" class="library-container">
                 <!-- Dynamically populated -->
             </div>
         </div>
